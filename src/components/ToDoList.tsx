@@ -1,8 +1,9 @@
 import React from "react";
-import { useRecoilValue } from "recoil";
-import { toDoState } from "./atom";
+import { useRecoilState, useRecoilValue } from "recoil";
+import { Categories, categoryState, toDoSelector, toDoState } from "./atom";
 import CreateToDo from "./CreateToDo";
 import ToDo from "./ToDo";
+import styled from "styled-components";
 
 /* function ToDoList() {
   const [toDo, setToDo] = useState("");
@@ -33,28 +34,34 @@ import ToDo from "./ToDo";
   );
 } */
 
-
+const ToDoTitle = styled.div`
+  text-align: center;
+  margin: 20px 0;
+  font-size : 50px;
+  font-weight: 600;
+`;
 
 function ToDoList() {
-  // const value = useRecoilValue(toDoState); //atom의 값을 불러오고
-  // const modFn = useSetRecoilState(toDoState);  //atom의 값을 수정가능
-  // => 아래와 같이 쓸 수 있음
-  // const [toDos, setToDos] = useRecoilState(toDoState);
-
-
-  const toDos = useRecoilValue(toDoState);
-  
-  console.log(toDos);
+  // const toDos = useRecoilValue(toDoState);
+  const toDos = useRecoilValue(toDoSelector);
+  const [category, setCategory] = useRecoilState(categoryState);
+  const onInput = (event: React.FormEvent<HTMLSelectElement>) => {
+    setCategory(event.currentTarget.value as any);
+  };
   
   return (
-    <div>
-      <h1>To Do</h1>
+    <div >
+      <ToDoTitle>To Do</ToDoTitle>
       <hr/>
+      <select value={category} onInput={onInput}>
+        <option value={Categories.TO_DO}>To Do</option>
+        <option value={Categories.DOING}>Doing</option>
+        <option value={Categories.DONE}>Done</option>
+      </select>
       <CreateToDo/>
-      <ul>
-        {/* {toDos.map(toDo => <ToDo text={toDo.text} id={toDo.id} category={toDo.category}/>)} */}
-        {toDos.map(toDo => <ToDo {...toDo}/>)}
-      </ul>
+      {toDos?.map((toDo) => (
+        <ToDo key={toDo.id} {...toDo} />
+      ))}
     </div>
   );
 }
@@ -62,34 +69,3 @@ function ToDoList() {
 
 export default ToDoList;
 
-
-
-///////////register와 watch///////////////
-// register: name, onBlur, onChange, onClick, ref를 return하는 함수
-// -< input {...register("category") ... > 하면 register 함수가 반환하는 객체를 input의 props로 사용할 수 있음.
-// -< input onSubmit={} onClick={} onBlur={} > 같은 느낌..?
-// watch: form의 입력값들의 변화를 (실시간) 관찰할 수 있게 해주는 함수
-
-
-// register: (name: string, RegisterOptions?) => ({ onChange, onBlur, name, ref })
-// 이 메서드를 사용하면 input을 등록하거나 element를 선택하고 유효성 검사 규칙을 React Hook Form에 적용할 수 있습니다.
-// 유효성 검사 규칙은 모두 HTML 표준을 기반으로 하며 사용자 지정 유효성 검사 방법도 허용합니다.
-
-// watch: (names?: string | string[] | (data, options) => void) => unknown
-// input의 변화를 구독합니다. 이 메서드는 지정된 input을 감시하고 해당 값을 반환합니다. input 값을 렌더링하고 조건에 따라 무엇을 렌더링할지 결정하는 데 유용합니다.
-
-
-
-///////userRecoilState
-// useRecoilState(state)
-
-// 첫 요소가 상태의 값이며, 두번째 요소가 호출되었을 때 주어진 값을 업데이트하는 setter 함수인 튜플을 리턴합니다.
-// 이 hook은 암묵적으로 주어진 상태에 컴포넌트를 구독합니다.
-// ```
-// const [tempF, setTempF] = useRecoilState(tempFahrenheit);
-// ```
-// https://recoiljs.org/ko/docs/api-reference/core/useRecoilState/
-
-// useRecoilValue: state값을 리턴
-// useSetRecoilState: setter 함수를 리턴
-// useRecoilState: state, setter 함수를 모두 리턴
