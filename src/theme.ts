@@ -9,4 +9,5 @@ export const darkTheme: DefaultTheme = {
   boardColor : "#DADFE9",
   boardIconColor : "#444649cf",
   boardTitleColor :"#283747",
+  boardDraggingColor: "#C2C5CD",
 };
