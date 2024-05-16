@@ -13,12 +13,12 @@ interface IDragabbleCardProps {
 function DraggableCard({ toDoId,toDoText, index }: IDragabbleCardProps) {
   return (
     <Draggable draggableId={String(toDoId)} index={index}>
-      {(provided, snapShot) => (
+      {(cardProvided, snapShot) => (
         <Card
           isDragging = {snapShot.isDragging}
-          ref={provided.innerRef}
-          {...provided.dragHandleProps}
-          {...provided.draggableProps}
+          ref={cardProvided.innerRef}
+          {...cardProvided.dragHandleProps}
+          {...cardProvided.draggableProps}
         >
           {toDoText}
         </Card>
@@ -26,7 +26,7 @@ function DraggableCard({ toDoId,toDoText, index }: IDragabbleCardProps) {
     </Draggable>
   );
 }
-export default DraggableCard;
+export default React.memo(DraggableCard);
 
 
 

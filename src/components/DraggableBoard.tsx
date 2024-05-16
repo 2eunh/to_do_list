@@ -103,7 +103,7 @@ function DraggableBoard({ toDos, board, index }: IBoardProps) {
               {(droppableProvided, droppableSnapshot) => (
                 <Area
                   isDraggingOver={droppableSnapshot.isDraggingOver}
-                  isDraggingFromThis={!!droppableSnapshot.draggingFromThisWith}
+                  isDraggingFromThis={Boolean(droppableSnapshot.draggingFromThisWith)}
                   ref={droppableProvided.innerRef}
                   {...droppableProvided.droppableProps}
                 >
