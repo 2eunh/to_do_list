@@ -1,7 +1,7 @@
 import React, { Component, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import styled from "styled-components";
-import { IToDo, toDosState } from "../atom";
+import { IToDo, toDoState } from "../atom";
 import { DragDropContext, Draggable, DropResult, Droppable } from "react-beautiful-dnd";
 import { HiPencil } from "react-icons/hi2";
 import { RxDragHandleDots2 } from "react-icons/rx";
@@ -16,7 +16,7 @@ interface IForm {
 
 interface IBoardProps {
   toDos: IToDo[];
-  board: any;
+  boardId: string;
   index: number;
 }
 
@@ -25,9 +25,19 @@ interface IAreaProps {
   isDraggingOver: boolean;
 }
 
-function DraggableBoard({ toDos, board, index }: IBoardProps) {
-  const setToDos = useSetRecoilState(toDosState);
-  const { register, handleSubmit, setValue } = useForm<IForm>();
+function DraggableBoard({ toDos, boardId, index }: IBoardProps) {
+  const setToDos = useSetRecoilState(toDoState);
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    clearErrors,
+    formState: { errors },
+  } = useForm<IForm>({
+    mode: 'onChange',
+  });
+
+
   const [isEditing, setIsEditing] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -42,32 +52,29 @@ function DraggableBoard({ toDos, board, index }: IBoardProps) {
   }, [isEditing]);
 
   const onValid = ({ toDo }: IForm) => {
-    const newToDo: IToDo = {
-      id: Date.now().toString(),
+    clearErrors();
+    const newToDo = {
+      id: Date.now(),
       text: toDo,
     };
-  
-    // 새로운 할 일을 추가
-    setToDos(prevToDos => {
-      const updatedToDos = prevToDos.map(prevBoard => {
-        if (prevBoard.id === board.id) {
-          return {
-            ...prevBoard,
-            toDos: [ newToDo, ...prevBoard.toDos],
-          };
-        }
-        return prevBoard;
-      });
-      return updatedToDos;
+    setToDos((allBoards : any) => {
+      return {
+        ...allBoards,
+        [boardId]: [newToDo, ...allBoards[boardId]],
+      };
     });
-  
-    // 입력 필드를 초기화
     setValue("toDo", "");
   };
+
+  const onTitleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setValue("toDo", newValue + "를(을) 추가해주세요.");
+  };
+
   
 
   return (
-    <Draggable draggableId={board.id} index={index}>
+    <Draggable draggableId={boardId} index={index} key={boardId}>
       {(provided, snapshot) => (
         <Wrapper
           ref={provided.innerRef}
@@ -77,11 +84,16 @@ function DraggableBoard({ toDos, board, index }: IBoardProps) {
           <Top isDragging={snapshot.isDragging}>
             <TitleInput
               type="text"
-              defaultValue={board.title}
+              defaultValue={boardId}
               disabled={!isEditing}
               ref={inputRef}
               isDragging={snapshot.isDragging}
+              onChange={onTitleInputChange}
+              maxLength={10}
             />
+            {boardId.length > 10 && (
+              <Error>최대 10글자까지 입력 가능합니다.</Error>
+            )}
             <div className="btn-area">
               <button onClick={toggleEditing}>
                 <HiPencil size="20" />
@@ -93,13 +105,17 @@ function DraggableBoard({ toDos, board, index }: IBoardProps) {
           </Top>
           <Form onSubmit={handleSubmit(onValid)}>
             <input
-              {...register("toDo", { required: true })}
+              {...register("toDo", { required: true, maxLength: 50 })} // 최대 글자 수를 50으로 제한
               type="text"
-              placeholder={`Add a new task to ${board.title}.`}
+              autoComplete="off"
+              placeholder={`${boardId}를(을) 추가해주세요..`}
             />
+            {errors.toDo && errors.toDo.type === "maxLength" && (
+              <Error>최대 50글자까지 입력 가능합니다.</Error>
+            )}
           </Form>
           <CardWrapper>
-            <Droppable droppableId={board.id}>
+            <Droppable droppableId={boardId}>
               {(droppableProvided, droppableSnapshot) => (
                 <Area
                   isDraggingOver={droppableSnapshot.isDraggingOver}
@@ -139,8 +155,8 @@ const Wrapper = styled.div<{ isDragging: boolean }>`
   display: flex;
   flex-direction: column;
   margin: 10px 1%;
-  min-height: 65%;
-  max-height: 65%;
+  min-height: 550px;
+  max-height: 550px;
 `;
 
 const Form = styled.form`
@@ -153,7 +169,7 @@ const Form = styled.form`
     border-radius: 10px;
     padding: 0 10px;
     outline: none;
-    background-color: ${(props) => props.theme.titleColor} ;
+    background-color: ${(props) => props.theme.boardInputColor} ;
   }
 `;
 
@@ -177,7 +193,7 @@ const Top = styled.div<{ isDragging: boolean }>`
     button {
       color: ${(props) => props.theme.boardIconColor};
       &:hover {
-        color: ${(props) => props.theme.boardTitleColor};
+        color: #000000cc;
       }
     }
   }
@@ -193,17 +209,15 @@ const TitleInput = styled.input<{ isDragging: boolean }>`
   width: 70%;
 `;
 
-
 const Area = styled.div<IAreaProps>`
-  background-color: ${(props) =>
-  props.isDraggingOver ? "#dfe6e9" : props.isDraggingFromThis ? "#b2bec3" : "transparent"};
+  /* background-color: ${(props) =>
+  props.isDraggingOver ? props.theme.boardDraggingColor : props.isDraggingFromThis ? "" : "transparent"}; */
   flex-grow: 1;
   transition: background-color 0.3s ease-in-out;
   padding: 20px;
 
 `;
 const CardWrapper = styled.div`
-  height: 100%;
   overflow: auto;
   margin-top: 10px;
   /* 스크롤바의 폭 너비 */
@@ -217,6 +231,11 @@ const CardWrapper = styled.div`
   &::-webkit-scrollbar-track {
     background: #1c1c1d25;  /*스크롤바 뒷 배경 색상*/
   }
+`;
+const Error = styled.p`
+  color: #C0392B;
+  margin-top: 7px;
+  font-size: 13px;
 `;
 
 

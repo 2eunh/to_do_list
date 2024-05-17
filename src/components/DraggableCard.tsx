@@ -35,6 +35,6 @@ const Card = styled.div<{isDragging : boolean}>`
   margin-bottom: 10px;
   padding: 15px 10px;
   font-size: 15px;
-  background-color: ${(props) => props.isDragging? "tomato" : props.theme.cardColor};
+  background-color: ${(props) => props.isDragging? "#CACFD2" : props.theme.cardColor};
   box-shadow: ${props => props.isDragging ? "0px 2px 5px rgba(0,0,0,0.5)" : "none"};
 `;
