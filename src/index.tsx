@@ -4,6 +4,7 @@ import { ThemeProvider, createGlobalStyle } from "styled-components";
 import { darkTheme, lightTheme } from "./theme";
 import App from "./App";
 import { RecoilRoot } from "recoil";
+import { QueryClient } from "react-query";
 
 const GlobalStyle = createGlobalStyle`
 @import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400&display=swap');
@@ -76,10 +77,10 @@ a {
 ReactDOM.render(
   <React.StrictMode>
     <RecoilRoot>
-      <ThemeProvider theme={lightTheme}>
-      <GlobalStyle />
+      {/* <ThemeProvider  theme={lightTheme}>
+      <GlobalStyle /> */}
         <App/>
-      </ThemeProvider>
+      {/* </ThemeProvider> */}
     </RecoilRoot>
   </React.StrictMode>,
   document.getElementById("root")

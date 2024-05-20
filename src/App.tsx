@@ -1,14 +1,16 @@
-import styled from "styled-components";
+import styled, { ThemeProvider, createGlobalStyle } from "styled-components";
 import React, { useState } from "react";
 import { HiPlus } from "react-icons/hi";
 import { MdOutlineDarkMode } from "react-icons/md";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 import { DragDropContext, DropResult, Droppable } from "react-beautiful-dnd";
 import DraggableBoard from "./components/DraggableBoard";
 import { BoardState, toDoState } from "./atom";
 import Delete from "./components/Delete";
+import { darkTheme, lightTheme } from "./theme";
 
 function App() {
+  const [isDark, setIsDark] = useState(false); //테마 설정
   const [toDos, setToDos] = useRecoilState(toDoState);
   const [boards, setBoards] = useRecoilState(BoardState);
   const onDragEnd = (result: DropResult) => {
@@ -86,43 +88,50 @@ function App() {
       alert("최대 보드 갯수를 초과했습니다.");
     }
   };
-  
+
+  //테마 설정
+  const setTheme = () => {
+    setIsDark(prevIsDark => !prevIsDark);
+  }
 
   return (
-    <Wrapper>
-      <Header>
-        <span>To Do List</span>
-        <div className="btn-area">
-          <button className="btn" onClick={addNewBoard}>
-            <HiPlus size="25" />
-          </button>
-          <button className="btn">
-            <MdOutlineDarkMode size="25" />
-          </button>
-        </div>
-      </Header>
-      <DragDropContext onDragEnd={onDragEnd}>
-        <Droppable droppableId="boards" direction="horizontal" type="board">
-          {(providedDroppable) => (
-            <Boards
-              ref={providedDroppable.innerRef}
-              {...providedDroppable.droppableProps}
-            >
-              {boards.map((boardId, index) => (
-                <DraggableBoard
-                  boardId={boardId}
-                  toDos={toDos[boardId]}
-                  index={index}
-                  key={index}
-                />
-              ))}
-              {providedDroppable.placeholder}
-            </Boards>
-          )}
-        </Droppable>
-        <Delete/>
-      </DragDropContext>
-    </Wrapper>
+    <ThemeProvider theme={isDark ? darkTheme : lightTheme}>
+      <GlobalStyle />
+      <Wrapper>
+        <Header>
+          <span>To Do List</span>
+          <div className="btn-area">
+            <button className="btn" onClick={addNewBoard}>
+              <HiPlus size="25" />
+            </button>
+            <button className="btn" onClick={setTheme}>
+              <MdOutlineDarkMode size="25" />
+            </button>
+          </div>
+        </Header>
+        <DragDropContext onDragEnd={onDragEnd}>
+          <Droppable droppableId="boards" direction="horizontal" type="board">
+            {(providedDroppable) => (
+              <Boards
+                ref={providedDroppable.innerRef}
+                {...providedDroppable.droppableProps}
+              >
+                {boards.map((boardId, index) => (
+                  <DraggableBoard
+                    boardId={boardId}
+                    toDos={toDos[boardId]}
+                    index={index}
+                    key={index}
+                  />
+                ))}
+                {providedDroppable.placeholder}
+              </Boards>
+            )}
+          </Droppable>
+          <Delete/>
+        </DragDropContext>
+      </Wrapper>
+    </ThemeProvider>
   );
 }
 
@@ -166,4 +175,72 @@ const Header = styled.div`
       }
     }
   }
+`;
+
+
+const GlobalStyle = createGlobalStyle`
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400&display=swap');
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, menu, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+main, menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure,
+footer, header, hgroup, main, menu, nav, section {
+  display: block;
+}
+/* HTML5 hidden-attribute fix for newer browsers */
+*[hidden] {
+    display: none;
+}
+body {
+  line-height: 1;
+  width: 70%;
+  margin: 0 auto;
+}
+menu, ol, ul {
+  list-style: none;
+}
+blockquote, q {
+  quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+  content: '';
+  content: none;
+}
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  font-weight: 300;
+  font-family: 'Source Sans Pro', sans-serif;
+  background-color:${(props) => props.theme.bgColor};
+  color:black;
+  line-height: 1.2;
+}
+a {
+  text-decoration:none;
+  color:inherit;
+}
 `;
