@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Droppable } from 'react-beautiful-dnd';
 import { useRecoilValue } from 'recoil';
 import { deleteSatate } from '../atom';
@@ -30,4 +30,5 @@ const Wrapper = styled.div`
   color: #A6ACAF ;
   float: right;
   padding: 2px;
+  
 `;

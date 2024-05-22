@@ -4,9 +4,7 @@ import { HiPlus } from "react-icons/hi";
 import { MdOutlineDarkMode } from "react-icons/md";
 import { MdOutlineLightMode } from "react-icons/md";
 import {
-  SetterOrUpdater,
   useRecoilState,
-  useRecoilValue,
   useSetRecoilState,
 } from "recoil";
 import {
@@ -22,7 +20,6 @@ import { darkTheme, lightTheme } from "./theme";
 
 function App() {
   const [isDark, setIsDark] = useState(true); //테마 설정
-  const [isDelete, setIsDelete] = useState(false);
   const [toDos, setToDos] = useRecoilState(toDoState);
   const [boards, setBoards] = useRecoilState(BoardState);
   const setDeleted = useSetRecoilState(deleteSatate);
@@ -30,6 +27,7 @@ function App() {
   const onBeforeDragStart = (info: DragStart) => {
     if (info.type === "DEFAULT") setDeleted(true);
   };
+  
   const onDragEnd = (
     result: DropResult
   ) => {

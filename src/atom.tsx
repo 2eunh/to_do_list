@@ -1,17 +1,13 @@
 import { atom } from "recoil";
+import { recoilPersist } from "recoil-persist";
 
-// const { persistAtom } = recoilPersist(); //상태관리
+const { persistAtom } = recoilPersist(); //상태관리
 
 export interface IToDo {
   id: string;
   text: string;
 }
 
-// export interface IBoard {
-//   id: string;
-//   title: string;
-//   // toDos: IToDo[];
-// }
 
 export interface IToDoState {
   [key: string]: IToDo[];
@@ -20,6 +16,7 @@ export interface IToDoState {
 export const BoardState = atom<string[]>({
   key: 'boards',
   default: ['To Do', 'Doing', 'Done'],
+  effects_UNSTABLE: [persistAtom],
 });
 
 export const toDoState = atom<IToDoState>({
@@ -34,6 +31,7 @@ export const toDoState = atom<IToDoState>({
     Doing: [],
     Done: []
   },
+  effects_UNSTABLE: [persistAtom],
 });
 
 
@@ -42,27 +40,4 @@ export const deleteSatate = atom<boolean>({
   default: false,
 });
 
-
-
-
-// export const toDosState = atom<IBoard[]>({
-//   key: "toDos",
-//   default: [
-//     {
-//       title: "To Do",
-//       id: "0",
-//       toDos: [],
-//     },
-//     { 
-// 			title: "Doing", 
-// 			id: "ff", 
-// 			toDos: [] 
-// 		},
-//     {
-//       title: "Done",
-//       id: "2",
-//       toDos: [],
-//     },
-//   ],
-// });
 
