@@ -7,6 +7,7 @@ import { HiPencil } from "react-icons/hi2";
 import { RxDragHandleDots2 } from "react-icons/rx";
 import DraggableCard from "./DraggableCard";
 import { useSetRecoilState } from "recoil";
+import Delete from "./Delete";
 
 
 
@@ -91,9 +92,6 @@ function DraggableBoard({ toDos, boardId, index }: IBoardProps) {
               onChange={onTitleInputChange}
               maxLength={10}
             />
-            {boardId.length > 10 && (
-              <Error>최대 10글자까지 입력 가능합니다.</Error>
-            )}
             <div className="btn-area">
               <button onClick={toggleEditing}>
                 <HiPencil size="20" />
@@ -115,7 +113,7 @@ function DraggableBoard({ toDos, boardId, index }: IBoardProps) {
             )}
           </Form>
           <CardWrapper>
-            <Droppable droppableId={boardId}>
+            <Droppable droppableId={boardId} type="card">
               {(droppableProvided, droppableSnapshot) => (
                 <Area
                   isDraggingOver={droppableSnapshot.isDraggingOver}
@@ -129,6 +127,7 @@ function DraggableBoard({ toDos, boardId, index }: IBoardProps) {
                       index={index}
                       toDoId={toDo.id}
                       toDoText={toDo.text}
+                      boardId={boardId}
                     />
                   ))}
                   {droppableProvided.placeholder}
@@ -164,7 +163,7 @@ const Form = styled.form`
   text-align: center;
   input {
     width: 90%;
-    height: 35px;
+    height: 40px;
     border: none;
     border-radius: 10px;
     padding: 0 10px;

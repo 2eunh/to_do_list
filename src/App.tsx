@@ -1,19 +1,39 @@
 import styled, { ThemeProvider, createGlobalStyle } from "styled-components";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { HiPlus } from "react-icons/hi";
 import { MdOutlineDarkMode } from "react-icons/md";
-import { useRecoilState, useRecoilValue } from "recoil";
-import { DragDropContext, DropResult, Droppable } from "react-beautiful-dnd";
+import { MdOutlineLightMode } from "react-icons/md";
+import {
+  SetterOrUpdater,
+  useRecoilState,
+  useRecoilValue,
+  useSetRecoilState,
+} from "recoil";
+import {
+  DragDropContext,
+  DragStart,
+  DropResult,
+  Droppable,
+} from "react-beautiful-dnd";
 import DraggableBoard from "./components/DraggableBoard";
-import { BoardState, toDoState } from "./atom";
+import { BoardState, deleteSatate, toDoState, IToDoState } from "./atom";
 import Delete from "./components/Delete";
 import { darkTheme, lightTheme } from "./theme";
 
 function App() {
-  const [isDark, setIsDark] = useState(false); //테마 설정
+  const [isDark, setIsDark] = useState(true); //테마 설정
+  const [isDelete, setIsDelete] = useState(false);
   const [toDos, setToDos] = useRecoilState(toDoState);
   const [boards, setBoards] = useRecoilState(BoardState);
-  const onDragEnd = (result: DropResult) => {
+  const setDeleted = useSetRecoilState(deleteSatate);
+
+  const onBeforeDragStart = (info: DragStart) => {
+    if (info.type === "DEFAULT") setDeleted(true);
+  };
+  const onDragEnd = (
+    result: DropResult
+  ) => {
+    //////////////////
     //   draggableId:유저가 드래그 하고 있던 객체의 id
     //   source: draggable이 시작한 위치
     //   destination:draggable이 끝난 위치 (리스트 바깥에 drop되는 등 null이 될수도)
@@ -22,19 +42,26 @@ function App() {
     // 유효한 드래그 드롭이 아닌 경우
     if (!destination) return;
 
+    setDeleted(false);
+
     //보드 간 이동
-    if (source.droppableId === "boards") {
-      setBoards((prev) => {
-        const boardCopy = [...prev];
+    if (
+      source.droppableId === "boards" &&
+      destination.droppableId !== "delete"
+    ) {
+      setBoards((allBoards) => {
+        const boardCopy = [...allBoards];
         const item = boardCopy.splice(source.index, 1)[0];
         boardCopy.splice(destination.index, 0, item);
         return boardCopy;
       });
-    } else if (destination.droppableId === "trashcan") {
-      setToDos((allBoards) => {
-        const boardCopy = [...allBoards[source.droppableId]];
+    }
+    //보드 삭제
+    else if (destination.droppableId === "delete") {
+      setBoards((allBoards) => {
+        const boardCopy = [...allBoards];
         boardCopy.splice(source.index, 1);
-        return { ...allBoards, [source.droppableId]: boardCopy };
+        return boardCopy;
       });
     }
     //같은 보드 내에서 카드 움직임
@@ -68,13 +95,13 @@ function App() {
   const addNewBoard = () => {
     // 최대 보드 수
     const maxBoards = 5;
-  
+
     // 현재 보드 배열
     const currentBoards = boards;
 
     // 현재 보드 배열의 길이
     const currentBoardLength = currentBoards.length;
-  
+
     // 새 보드 추가
     if (currentBoards.length < maxBoards) {
       const newBoard = `New Board(${currentBoardLength + 1})`;
@@ -91,8 +118,8 @@ function App() {
 
   //테마 설정
   const setTheme = () => {
-    setIsDark(prevIsDark => !prevIsDark);
-  }
+    setIsDark((prevIsDark) => !prevIsDark);
+  };
 
   return (
     <ThemeProvider theme={isDark ? darkTheme : lightTheme}>
@@ -105,13 +132,20 @@ function App() {
               <HiPlus size="25" />
             </button>
             <button className="btn" onClick={setTheme}>
-              <MdOutlineDarkMode size="25" />
+              {isDark ? (
+                <MdOutlineLightMode size="25" />
+              ) : (
+                <MdOutlineDarkMode size="25" />
+              )}
             </button>
           </div>
         </Header>
-        <DragDropContext onDragEnd={onDragEnd}>
-          <Droppable droppableId="boards" direction="horizontal" type="board">
-            {(providedDroppable) => (
+        <DragDropContext
+          onDragEnd={onDragEnd}
+          onBeforeDragStart={onBeforeDragStart}
+        >
+          <Droppable droppableId="boards" direction="horizontal">
+            {(providedDroppable, snapshotProvided) => (
               <Boards
                 ref={providedDroppable.innerRef}
                 {...providedDroppable.droppableProps}
@@ -128,7 +162,7 @@ function App() {
               </Boards>
             )}
           </Droppable>
-          <Delete/>
+          <Delete />
         </DragDropContext>
       </Wrapper>
     </ThemeProvider>
@@ -163,20 +197,19 @@ const Header = styled.div`
   .btn-area {
     .btn {
       border-radius: 100%;
-      border: ${(props) =>  props.theme.titleBtnBoder};
+      border: ${(props) => props.theme.titleBtnBoder};
       width: 50px;
       height: 50px;
       margin-right: 10px;
       background-color: ${(props) => props.theme.bgColor};
-      color: ${(props) =>  props.theme.titleColor};
+      color: ${(props) => props.theme.titleColor};
       &:hover {
-        box-shadow: ${(props) =>  props.theme.titleBtnShadow};
+        box-shadow: ${(props) => props.theme.titleBtnShadow};
         cursor: pointer;
       }
     }
   }
 `;
-
 
 const GlobalStyle = createGlobalStyle`
 @import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400&display=swap');

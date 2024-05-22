@@ -13,7 +13,7 @@ export interface IToDo {
 //   // toDos: IToDo[];
 // }
 
-interface IToDoState {
+export interface IToDoState {
   [key: string]: IToDo[];
 }
 

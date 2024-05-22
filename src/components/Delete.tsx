@@ -5,18 +5,16 @@ import { deleteSatate } from '../atom';
 import styled from 'styled-components';
 import { MdDeleteForever } from "react-icons/md";
 
-function Delete(){
+function Delete(  ){
   const deleted = useRecoilValue(deleteSatate);
   return (
     <Droppable droppableId="delete">
       {(provided) => (
         <Wrapper ref={provided.innerRef} {...provided.droppableProps}>
           {deleted && (
-            <span className="delete">
-              <span></span>
-              <MdDeleteForever size="25" />
-            </span>
-          )}
+            <MdDeleteForever size="50" />
+          )} 
+          {provided.placeholder}
         </Wrapper>
       )}
     </Droppable>
@@ -26,10 +24,10 @@ function Delete(){
 export default Delete;
 
 const Wrapper = styled.div`
-  background-color: pink;
-  width: 50px;
+  width: 55px;
+  height: 55px;
   overflow: hidden;
-  text-align: center;
-  color: #cb4335;
-  margin: 0 auto;
+  color: #A6ACAF ;
+  float: right;
+  padding: 2px;
 `;
